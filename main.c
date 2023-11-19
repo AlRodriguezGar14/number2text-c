@@ -44,14 +44,14 @@ void insertTriad(struct Container *container, struct Triad *triad) {
 }
 
 void printTriads(struct Container *container) {
-   struct Triad *current = &container->head;
-    while (current != NULL) {
-        printf("Triad block: %s\n", current->triad_block);
-        printf("Min value: %d\n", current->min_value);
-        printf("Mid value: %d\n", current->mid_value);
-        printf("Max value: %d\n", current->max_value);
+   struct Triad *curr = &container->head;
+    while (curr != NULL) {
+        printf("Triad block: %s\n", curr->triad_block);
+        printf("Min value: %d\n", curr->min_value);
+        printf("Mid value: %d\n", curr->mid_value);
+        printf("Max value: %d\n", curr->max_value);
         printf("\n");
-        current = current->next;
+        curr = curr->next;
     }
 }
 
@@ -66,22 +66,38 @@ const char *findValueByKey(char *key, struct DictionaryBase *dict, int dictLengt
 
 void printNumber(struct Container *container) {
 
-   struct Triad *current = &container->head;
+   struct Triad *curr = &container->head;
    char out[256];
    char str_max[4];
+   char mid_min[3];
+   char single[2];
+   char single_mid[3];
 
-    while (current != NULL) {
-        if (current->max_value > 0) {
-            sprintf(str_max, "%d", current->max_value);
-            printf("%s %s", findValueByKey(str_max, Dictionary, 100), findValueByKey("100", Dictionary, 100)); // use 100 as dict size until I know a way to calculate it
+    while (curr != NULL) {
+        if (curr->max_value > 0) {
+            sprintf(str_max, "%d", curr->max_value);
+            printf("%s %s ", findValueByKey(str_max, Dictionary, 100), findValueByKey("100", Dictionary, 100)); // use 100 as dict size until I know a way to calculate it
 
         }
-        // printf("Triad block: %s\n", current->triad_block);
-        // printf("Min value: %d\n", current->min_value);
-        // printf("Mid value: %d\n", current->mid_value);
-        // printf("Max value: %d\n", current->max_value);
-        // printf("\n");
-        current = current->next;
+
+        if (curr->mid_value + curr->min_value <= 20 && curr->mid_value + curr->min_value != 0) {
+            sprintf(mid_min, "%d", curr->mid_value + curr->min_value);
+            printf("%s ", findValueByKey(mid_min, Dictionary, 100));
+        } else if (curr->min_value == 0 && curr->mid_value != 0) {
+            sprintf(single, "%d", curr->mid_value);
+            printf("%s ", findValueByKey(single, Dictionary, 100));
+        } else if (curr->mid_value == 0 && curr->min_value != 0) {
+            sprintf(single, "%d", curr->min_value);
+            printf("%s ", findValueByKey(single, Dictionary, 100));
+        } else if (curr->min_value != 0 && curr->mid_value != 0) {
+            sprintf(single, "%d", curr->min_value);
+            sprintf(single_mid, "%d", curr->mid_value);
+            printf("%s-%s ", findValueByKey(single_mid, Dictionary, 100), findValueByKey(single, Dictionary, 100));
+        }
+        if (strcmp(curr->triad_block, "1") != 0 && (curr->max_value + curr->mid_value + curr->min_value) != 0) {
+            printf("%s ", findValueByKey(curr->triad_block, Dictionary, 100));
+        }
+        curr = curr->next;
     }
 }
 
