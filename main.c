@@ -120,7 +120,9 @@ void printNumber(struct Container* container, struct ListNode** list) {
     char single[3];
     char single_mid[3];
     char tmp_str[256];
-    int idx = 0; // The idx needs to increase to reverse the order when printing
+    int idx = 0; // If this is zero, it means the input is 0. Print zero.
+
+
 
     // Keeping in mind that I have to reverse the content block by block, I have to also reverse the logic
     // To print from hundreths to triad_block, i first attach the triad block, then the dec, num, and then the cents
@@ -166,6 +168,9 @@ void printNumber(struct Container* container, struct ListNode** list) {
             idx++;
         }
         curr = curr->next;
+    }
+    if (idx == 0) {
+        appendToList(list, "zero");
     }
 }
 
