@@ -4,24 +4,22 @@
 #include "dictionary.h"
 
 struct Triad {
-    char    triad_block[30];
-    int     min_value;
-    int     mid_value;
-    int     max_value;
-    int     created;
-    struct Triad *next;
+    char triad_block[30];
+    int min_value;
+    int mid_value;
+    int max_value;
+    int created;
+    struct Triad* next;
 };
 
 struct Container {
-    int             length;
-    struct Triad    head;
+    int length;
+    struct Triad* head;
 };
 
+struct Triad* triadConstructor(char* triadBlock, int minValue, int midValue, int maxValue) {
+    struct Triad* triad = malloc(sizeof(struct Triad));
 
-struct Triad *triadConstructor(char *triadBlock, int minValue, int midValue, int maxValue)
-{
-    struct Triad *triad = malloc(sizeof(struct Triad));
-    
     strncpy(triad->triad_block, triadBlock, sizeof(triad->triad_block) - 1);
 
     triad->triad_block[sizeof(triad->triad_block) - 1] = '\0'; // Guarantee the string ends with null value
@@ -35,17 +33,20 @@ struct Triad *triadConstructor(char *triadBlock, int minValue, int midValue, int
     return triad;
 }
 
-void insertTriad(struct Container *container, struct Triad *triad) {
-    if (container->head.created != 1) {
-        container->head = *triad;
+void insertTriad(struct Container* container, struct Triad* triad) {
+    if (container->head == NULL) {
+        container->head = triad;
     } else {
-        triad->next = container->head.next;
-        container->head.next = triad;
+        struct Triad* temp = container->head;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = triad;
     }
 }
 
-void printTriads(struct Container *container) {
-   struct Triad *curr = &container->head;
+void printTriads(struct Container* container) {
+    struct Triad* curr = container->head;
     while (curr != NULL) {
         printf("Triad block: %s\n", curr->triad_block);
         printf("Min value: %d\n", curr->min_value);
@@ -56,7 +57,7 @@ void printTriads(struct Container *container) {
     }
 }
 
-const char *findValueByKey(char *key, struct DictionaryBase *dict, int dictLength) {
+const char* findValueByKey(char* key, struct DictionaryBase* dict, int dictLength) {
     for (size_t i = 0; i < dictLength; i++) {
         if (strcmp(dict[i].key, key) == 0) {
             return dict[i].value;
@@ -65,7 +66,7 @@ const char *findValueByKey(char *key, struct DictionaryBase *dict, int dictLengt
     return NULL; // Key not found
 }
 
-void appendString(char *out, const char *str) {
+void appendString(char* out, const char* str) {
     strcat(out, str);
     strcat(out, " ");
 }
@@ -95,6 +96,13 @@ void appendToList(struct ListNode** head, const char* value) {
     }
 }
 
+void printList(struct ListNode* head) {
+    while (head != NULL) {
+        printf("%s", head->value);
+        head = head->next;
+    }
+}
+
 void printListReverse(struct ListNode* head) {
     if (head == NULL) {
         return;
@@ -113,8 +121,7 @@ void freeList(struct ListNode* head) {
 }
 
 void printNumber(struct Container* container, struct ListNode** list) {
-
-    struct Triad* curr = &container->head;
+    struct Triad* curr = container->head;
     char str_max[4];
     char mid_min[3];
     char single[3];
@@ -122,12 +129,11 @@ void printNumber(struct Container* container, struct ListNode** list) {
     char tmp_str[256];
     int idx = 0; // The idx needs to increase to reverse the order when printing
 
-    // Keeping in mind that I have to reverse the content block by block, I have to also reverse the logic
-    // To print from hundreths to triad_block, i first attach the triad block, then the dec, num, and then the cents
     while (curr != NULL) {
-
-        if (strcmp(curr->triad_block, "1") != 0 && (curr->max_value + curr->mid_value + curr->min_value) != 0) {
-            sprintf(tmp_str, "%s ", findValueByKey(curr->triad_block, Dictionary, 100));
+        if (curr->max_value > 0) {
+            sprintf(str_max, "%d", curr->max_value);
+            sprintf(tmp_str, "%s %s ", findValueByKey(str_max, Dictionary, 100),
+                    findValueByKey("100", Dictionary, 100));
             appendToList(list, tmp_str);
             idx++;
         }
@@ -159,28 +165,23 @@ void printNumber(struct Container* container, struct ListNode** list) {
             idx++;
         }
 
-        if (curr->max_value > 0) {
-            sprintf(str_max, "%d", curr->max_value);
-            sprintf(tmp_str, "%s %s ", findValueByKey(str_max, Dictionary, 100), findValueByKey("100", Dictionary, 100));
+        if (strcmp(curr->triad_block, "1") != 0 && (curr->max_value + curr->mid_value + curr->min_value) != 0) {
+            sprintf(tmp_str, "%s ", findValueByKey(curr->triad_block, Dictionary, 100));
             appendToList(list, tmp_str);
             idx++;
         }
+
         curr = curr->next;
     }
 }
 
-
-void generateTriad(char *input, struct Container *container) {
-    
+void generateTriad(char* input, struct Container* container) {
     int idx = 0;
-    int total = atoi(input);
-    char    triad_block[30] = "1";
+    char triad_block[30] = "1";
 
-    while (input[idx + 1] != '\0')
-        idx++;
+    while (input[idx + 1] != '\0') idx++;
 
-    while (idx >= 0)
-    {
+    while (idx >= 0) {
         char str_num = input[idx];
         int num = atoi(&str_num);
 
@@ -203,33 +204,31 @@ void generateTriad(char *input, struct Container *container) {
     }
 }
 
-
-// struct DictionaryBase Dictionary[] -> Dictionary is already usable
-
 int main() {
     struct Container* triad_container = malloc(sizeof(struct Container));
     struct ListNode* list = NULL;
-    char *input;
+    char* input;
 
     // Allocate memory for the input string
-    input = (char *)malloc(256 * sizeof(char));  // Adjust the size as needed
+    input = (char*)malloc(256 * sizeof(char)); // Adjust the size as needed
 
     if (input == NULL) {
         printf("Memory allocation failed.\n");
-        return 1;  // Exit with an error code
+        return 1; // Exit with an error code
     }
 
     printf("Enter your number: ");
     scanf("%s", input);
 
-    // Free the allocated memory
-
     generateTriad(input, triad_container);
 
     free(input);
 
+    printTriads(triad_container);
+
     printNumber(triad_container, &list);
 
+    printf("\nDEBUG: Final List: ");
     printListReverse(list);
 
     freeList(list);
